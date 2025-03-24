@@ -2,8 +2,8 @@
 ### [Project Page](https://zju3dv.github.io/MotionStreamer/) | [Paper](https://arxiv.org/pdf/2503.15451)
 <br/>
 
-> MotionStreamer: Streaming Motion Generation via Diffusion-based Autoregressive Model in Causal Latent Space  
-> [Lixing Xiao](https://li-xingxiao.github.io/homepage/), [Shunlin Lu](https://shunlinlu.github.io/), [Huaijin Pi](https://phj128.github.io/), [Ke Fan](https://vankouf.github.io/), [Liang Pan](https://liangpan99.github.io/), [Yueer Zhou](https://scholar.google.com/citations?user=EWC3UGYAAAAJ/), [Ziyong Feng](https://dblp.org/pid/120/4362.html/), [Xiaowei Zhou](https://www.xzhou.me/), [Sida Peng](https://pengsida.net/), [Jingbo Wang](https://wangjingbo1219.github.io/)
+> MotionStreamer: Streaming Motion Generation via Diffusion-based Autoregressive Model in&nbsp;Causal&nbsp;Latent&nbsp;Space
+> [Lixing Xiao](https://li-xingxiao.github.io/homepage/), [Shunlin Lu](https://shunlinlu.github.io/), [Huaijin Pi](https://phj128.github.io/), [Ke Fan](https://vankouf.github.io/), [Liang Pan](https://liangpan99.github.io/), [Yueer Zhou](https://scholar.google.com/citations?user=EWC3UGYAAAAJ/), [Ziyong Feng](https://dblp.org/pid/120/4362.html/), [Xiaowei Zhou](https://www.xzhou.me/), [Sida Peng](https://pengsida.net/)<sup>†</sup>, [Jingbo Wang](https://wangjingbo1219.github.io/)
 
 <img width="1385" alt="image" src="assert/teaser.jpg"/>
 
