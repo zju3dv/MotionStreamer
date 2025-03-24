@@ -5,7 +5,7 @@
 > MotionStreamer: Streaming Motion Generation via Diffusion-based Autoregressive Model in Causal Latent Space  
 > [Lixing Xiao](https://li-xingxiao.github.io/homepage/), [Shunlin Lu](https://shunlinlu.github.io/), [Huaijin Pi](https://phj128.github.io/), [Ke Fan](https://vankouf.github.io/), [Liang Pan](https://liangpan99.github.io/), [Yueer Zhou](https://scholar.google.com/citations?user=EWC3UGYAAAAJ/), [Ziyong Feng](https://dblp.org/pid/120/4362.html/), [Xiaowei Zhou](https://www.xzhou.me/), [Sida Peng](https://pengsida.net/), [Jingbo Wang](https://wangjingbo1219.github.io/)
 
-<img width="1385" alt="image" src="asset/teaser.jpg"/>
+<img width="1385" alt="image" src="assert/teaser.jpg"/>
 
 ## TODO List
 
@@ -13,7 +13,7 @@
 - [ ] Release complete code for MotionStreamer.
 
 ## 🏃 Motion Representation
-### Please refer to [this repo](https://github.com/Li-xingXiao/272-dim-Motion-Representation) to get the modified 272-dim representation.
+Please refer to [this repo](https://github.com/Li-xingXiao/272-dim-Motion-Representation) for the 272-dim motion representation.
 
 
 ## 🤝🏼 Citation
