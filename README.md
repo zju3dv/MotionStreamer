@@ -10,7 +10,7 @@
 ## TODO List
 
 - [x] Release the processing script of 272-dim motion representation.
-- [x] Release the processed 272-dim Motion Representation of [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset. Only for research usage.
+- [x] Release the processed 272-dim Motion Representation of [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset. Only for academic usage.
 - [ ] Release complete code for MotionStreamer.
 
 ## 🏃 Motion Representation
