@@ -61,7 +61,7 @@ conda activate mgpt
 ```
 
 ### 🤗 Hugging Face Mirror
-> Since all of our models and data are available on Hugging Face, if Hugging Face is not directly accessible, you can use the HF-mirror tools following:
+Since all of our models and data are available on Hugging Face, if Hugging Face is not directly accessible, you can use the HF-mirror tools following:
 ```sh
 pip install -U huggingface_hub
 export HF_ENDPOINT=https://hf-mirror.com
