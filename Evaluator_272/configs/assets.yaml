@@ -1,0 +1,13 @@
+FOLDER: './experiments' # Experiment files saving path
+
+TEST:
+  FOLDER: './results' # Testing files saving path
+
+DATASET:
+  HUMANML3D_272:
+    ROOT: './datasets/humanml3d_272' # HumanML3D_272 directory
+    SPLIT_ROOT: './datasets/humanml3d_272/split' # HumanML3D_272 splits directory
+
+model:
+  bert_path: './deps/distilbert-base-uncased' 
+

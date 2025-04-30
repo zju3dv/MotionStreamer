@@ -46,13 +46,13 @@
 
 - [x] Release the processing script of 272-dim motion representation.
 - [x] Release the processed 272-dim Motion Representation of [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset. Only for academic usage.
-- [x] Release the checkpoint of our [TMR](https://github.com/Mathux/TMR)-based motion evaluator trained on the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset.
+- [x] Release the training code and checkpoint of our [TMR](https://github.com/Mathux/TMR)-based motion evaluator trained on the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset.
 - [ ] Release complete code for MotionStreamer.
 
 ## 🏃 Motion Representation
 For more details of how to obtain the 272-dim motion representation, as well as other useful tools (e.g., Visualization and Conversion to BVH format), please refer to our [GitHub repo](https://github.com/Li-xingXiao/272-dim-Motion-Representation).
 
-## 🚀 Installation
+## Installation
 
 ### 🐍 Python Virtual Environment
 ```sh
@@ -96,18 +96,25 @@ The dataset is organized as:
       ...
 ```
 
-## 💾 Checkpoint Preparation
+## 🚀 Training
+1. Training our [TMR](https://github.com/Mathux/TMR)-based motion evaluator on the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset following:
+    ```bash
+    bash TRAIN_evaluator_272.sh
+    ```
+    >After training for 100 epochs, the checkpoint will be stored at: 
+    ``Evaluator_272/experiments/temos/EXP1/checkpoints/``.
 
-1. Download the checkpoint of our [TMR](https://github.com/Mathux/TMR)-based motion evaluator trained on the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset on [Hugging Face](https://huggingface.co/lxxiao/MotionStreamer/tree/main/Evaluator_272).
+    We provide the evaluator checkpoint on [Hugging Face](https://huggingface.co/lxxiao/MotionStreamer/tree/main/Evaluator_272), download it following:
     ```bash
     python humanml3d_272/prepare/download_evaluator_ckpt.py
     ```
+    >The downloaded checkpoint will be stored at: ``Evaluator_272/``.
 
 ## 📍 Evaluation
 
 1. Evaluate the metrics of the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset following:
     ```bash
-    python Eval_gt.py
+    bash EVAL_GT.sh
     ```
     ( FID, R@1, R@2, R@3, Diversity and MM-Dist (Matching Score) are reported. )
 
@@ -118,6 +125,7 @@ This repository builds upon the following awesome datasets and projects:
 - [HumanML3D](https://github.com/EricGuo5513/HumanML3D)
 - [T2M-GPT](https://github.com/Mael-zys/T2M-GPT)
 - [TMR](https://github.com/Mathux/TMR)
+- [OpenTMA](https://github.com/LinghaoChan/OpenTMA)
 
 ## 🤝🏼 Citation
 If our project is helpful for your research, please consider citing :
