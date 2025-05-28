@@ -40,7 +40,7 @@
     <img src='https://img.shields.io/badge/Data-Download-yellow?style=flat&logo=huggingface&logoColor=yellow'></a>
 </p>
 
-<img width="1385" alt="image" src="assert/teaser.jpg"/>
+<img width="1385" alt="image" src="assets/teaser.jpg"/>
 
 ## TODO List
 
