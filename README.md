@@ -112,7 +112,7 @@ The dataset is organized as:
     >The downloaded checkpoint will be stored at: ``Evaluator_272/``.
 2. Train the Causal TAE following:
     ```bash
-      bash TRAIN_causal_TAE.sh ${NUM_GPUS}
+    bash TRAIN_causal_TAE.sh ${NUM_GPUS}
     ```
     > e.g., if you have 8 GPUs, run: bash TRAIN_causal_TAE.sh 8
 
@@ -121,7 +121,7 @@ The dataset is organized as:
 
     > Tensorboard visualization:
     ```bash
-      tensorboard --logdir='output/causal_TAE'
+    tensorboard --logdir='output/causal_TAE'
     ```
 
 ## 📍 Evaluation
@@ -134,7 +134,7 @@ The dataset is organized as:
 
 2. Evaluate the metrics of Causal TAE following:
     ```bash
-      bash EVAL_causal_TAE.sh
+    bash EVAL_causal_TAE.sh
     ```
     ( FID and MPJPE (mm) are reported. )
   
