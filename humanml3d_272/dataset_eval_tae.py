@@ -42,7 +42,7 @@ class Text2MotionDataset(data.Dataset):
         mean = np.load(pjoin(self.meta_dir, 'Mean.npy')) 
         std = np.load(pjoin(self.meta_dir, 'Std.npy'))
 
-        min_motion_len = 30
+        min_motion_len = 60  # 30 fps
 
         data_dict = {}
         id_list = []
@@ -58,8 +58,8 @@ class Text2MotionDataset(data.Dataset):
 
         for name in tqdm(id_list):
             motion = np.load(pjoin(self.motion_dir, name + '.npy'))
-            # if (len(motion)) < min_motion_len or (len(motion) >= self.max_motion_length):
-            #     continue
+            if (len(motion)) < min_motion_len or (len(motion) >= self.max_motion_length):
+                continue
 
 
             text_data = []
@@ -83,10 +83,9 @@ class Text2MotionDataset(data.Dataset):
                         flag = True
                         text_data.append(text_dict)
                     else:
-                        n_motion = motion[int(f_tag*fps) : int(to_tag*fps)]
-                        
-                        # if (len(n_motion)) < min_motion_len or (len(n_motion) >= self.max_motion_length):
-                        #     continue
+                        n_motion = motion[int(f_tag*fps) : int(to_tag*fps)]           
+                        if (len(n_motion)) < min_motion_len or (len(n_motion) >= self.max_motion_length):
+                            continue
                         new_name = random.choice('ABCDEFGHIJKLMNOPQRSTUVW') + '_' + name
                         while new_name in data_dict:
                             new_name = random.choice('ABCDEFGHIJKLMNOPQRSTUVW') + '_' + name

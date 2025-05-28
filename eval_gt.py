@@ -4,9 +4,10 @@ from utils import eval_trans
 from humanml3d_272 import dataset_eval_tae
 from options import option_transformer as option_trans
 import warnings
+import sys
 warnings.filterwarnings('ignore')
-
-
+os.chdir('Evaluator_272')
+sys.path.insert(0, os.getcwd()) 
 comp_device = torch.device('cuda')
 args = option_trans.get_args_parser()
 torch.manual_seed(args.seed)

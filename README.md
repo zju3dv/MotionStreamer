@@ -47,6 +47,7 @@
 - [x] Release the processing script of 272-dim motion representation.
 - [x] Release the processed 272-dim Motion Representation of [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset. Only for academic usage.
 - [x] Release the training code and checkpoint of our [TMR](https://github.com/Mathux/TMR)-based motion evaluator trained on the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset.
+- [x] Release the training and evaluation code of Causal TAE.
 - [ ] Release complete code for MotionStreamer.
 
 ## 🏃 Motion Representation
@@ -97,7 +98,7 @@ The dataset is organized as:
 ```
 
 ## 🚀 Training
-1. Training our [TMR](https://github.com/Mathux/TMR)-based motion evaluator on the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset following:
+1. Train our [TMR](https://github.com/Mathux/TMR)-based motion evaluator on the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset following:
     ```bash
     bash TRAIN_evaluator_272.sh
     ```
@@ -109,6 +110,19 @@ The dataset is organized as:
     python humanml3d_272/prepare/download_evaluator_ckpt.py
     ```
     >The downloaded checkpoint will be stored at: ``Evaluator_272/``.
+2. Train the Causal TAE following:
+    ```bash
+      bash TRAIN_causal_TAE.sh ${NUM_GPUS}
+    ```
+    > e.g., if you have 8 GPUs, run: bash TRAIN_causal_TAE.sh 8
+
+    > The checkpoint will be stored at:
+    ``output/causal_TAE/``
+
+    > Tensorboard visualization:
+    ```bash
+      tensorboard --logdir='output/causal_TAE'
+    ```
 
 ## 📍 Evaluation
 
@@ -118,6 +132,12 @@ The dataset is organized as:
     ```
     ( FID, R@1, R@2, R@3, Diversity and MM-Dist (Matching Score) are reported. )
 
+2. Evaluate the metrics of Causal TAE following:
+    ```bash
+      bash EVAL_causal_TAE.sh
+    ```
+    ( FID and MPJPE (mm) are reported. )
+  
 
 ## 🌹 Acknowledgement
 This repository builds upon the following awesome datasets and projects:
@@ -126,6 +146,7 @@ This repository builds upon the following awesome datasets and projects:
 - [T2M-GPT](https://github.com/Mael-zys/T2M-GPT)
 - [TMR](https://github.com/Mathux/TMR)
 - [OpenTMA](https://github.com/LinghaoChan/OpenTMA)
+- [Sigma-VAE](https://github.com/orybkin/sigma-vae-pytorch)
 
 ## 🤝🏼 Citation
 If our project is helpful for your research, please consider citing :

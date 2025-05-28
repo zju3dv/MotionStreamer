@@ -1,6 +1,85 @@
 import numpy as np
 import torch
 from scipy import linalg
+from utils.face_z_align_util import rotation_6d_to_matrix
+import visualization.plot_3d_global as plot_3d
+import os
+
+def tensorborad_add_video_xyz(writer, xyz, nb_iter, tag, title_batch=None, outname=None, fps=30):
+    xyz = xyz[:1]   
+    bs, seq = xyz.shape[:2]
+    xyz = xyz.reshape(bs, seq, -1, 3)
+    plot_xyz = plot_3d.draw_to_batch(xyz.cpu().numpy(),title_batch, outname)
+    plot_xyz = np.transpose(plot_xyz, (0, 1, 4, 2, 3)) 
+    writer.add_video(tag, plot_xyz, nb_iter, fps = fps)
+
+def calculate_mpjpe(gt_joints, pred_joints):
+    assert gt_joints.shape == pred_joints.shape, f"GT shape: {gt_joints.shape}, pred shape: {pred_joints.shape}"
+    pelvis = gt_joints[:, [0]].mean(1)
+    gt_joints = gt_joints - torch.unsqueeze(pelvis, dim=1)
+    pelvis = pred_joints[:, [0]].mean(1)
+    pred_joints = pred_joints - torch.unsqueeze(pelvis, dim=1)
+
+    mpjpe = torch.linalg.norm(pred_joints - gt_joints, dim=-1) 
+    mpjpe_seq = mpjpe.mean(-1)
+
+    return mpjpe_seq
+
+
+def accumulate_rotations(relative_rotations):
+    R_total = [relative_rotations[0]]
+    for R_rel in relative_rotations[1:]:
+        R_total.append(np.matmul(R_rel, R_total[-1]))
+    return np.array(R_total)
+
+def recover_from_local_position(final_x, njoint):
+
+    if final_x.ndim == 3:
+        bs, nfrm, _ = final_x.shape
+        is_batched = True
+    else:
+        nfrm, _ = final_x.shape
+        bs = 1
+        is_batched = False
+        final_x = final_x.reshape(1, *final_x.shape)
+
+    
+    positions_no_heading = final_x[:,:,8:8+3*njoint].reshape(bs, nfrm, njoint, 3) 
+    velocities_root_xy_no_heading = final_x[:,:,:2] 
+    global_heading_diff_rot = final_x[:,:,2:8] 
+
+   
+    positions_with_heading = []
+    for b in range(bs):
+        
+        global_heading_rot = accumulate_rotations(rotation_6d_to_matrix(torch.from_numpy(global_heading_diff_rot[b])).numpy())
+        inv_global_heading_rot = np.transpose(global_heading_rot, (0, 2, 1))
+        
+        
+        curr_pos_with_heading = np.matmul(np.repeat(inv_global_heading_rot[:, None,:, :], njoint, axis=1), 
+                                        positions_no_heading[b][...,None]).squeeze(-1)
+
+        
+        velocities_root_xyz_no_heading = np.zeros((velocities_root_xy_no_heading[b].shape[0], 3))
+        velocities_root_xyz_no_heading[:, 0] = velocities_root_xy_no_heading[b, :, 0]
+        velocities_root_xyz_no_heading[:, 2] = velocities_root_xy_no_heading[b, :, 1]
+        velocities_root_xyz_no_heading[1:, :] = np.matmul(inv_global_heading_rot[:-1], 
+                                                         velocities_root_xyz_no_heading[1:, :,None]).squeeze(-1)
+
+        root_translation = np.cumsum(velocities_root_xyz_no_heading, axis=0)
+
+        
+        curr_pos_with_heading[:, :, 0] += root_translation[:, 0:1]
+        curr_pos_with_heading[:, :, 2] += root_translation[:, 2:]
+        
+        positions_with_heading.append(curr_pos_with_heading)
+
+    positions_with_heading = np.stack(positions_with_heading, axis=0)
+
+    if not is_batched:
+        positions_with_heading = positions_with_heading.squeeze(0)
+
+    return positions_with_heading
 
 @torch.no_grad()                
 def evaluation_gt(val_loader, evaluator, device=torch.device('cuda')):  
@@ -32,7 +111,172 @@ def evaluation_gt(val_loader, evaluator, device=torch.device('cuda')):
     
     return fid, diversity_real, R_precision_real[0], R_precision_real[1], R_precision_real[2], matching_score_real
 
+# Single-GPU evaluation (test time)
+@torch.no_grad()
+def evaluation_tae_single(out_dir, val_loader, net, logger, writer, evaluator, device=torch.device('cuda')): 
+    net.eval()
+    nb_sample = 0
+    
+    textencoder, motionencoder = evaluator
 
+    motion_annotation_list = []
+    motion_pred_list = []
+
+    R_precision_real = torch.tensor([0,0,0], device=device)
+    R_precision = torch.tensor([0,0,0], device=device)
+    matching_score_real = torch.tensor(0.0, device=device)
+    matching_score_pred = torch.tensor(0.0, device=device)
+
+    nb_sample = torch.tensor(0, device=device)
+    mpjpe = torch.tensor(0.0, device=device)
+    num_poses = torch.tensor(0, device=device)
+
+    for batch in val_loader:
+        caption, motion, m_length = batch
+        motion = motion.to(device)
+        motion = motion.float()
+        bs, seq = motion.shape[0], motion.shape[1]
+        et, em = textencoder(caption).loc, motionencoder(motion, m_length).loc
+                    
+        num_joints = 22
+        
+        pred_pose_eval = torch.zeros((bs, seq, motion.shape[-1])).to(device)
+
+        for i in range(bs):
+            pose = val_loader.dataset.inv_transform(motion[i:i+1, :m_length[i], :].detach().cpu().numpy())
+            pose_xyz = recover_from_local_position(pose.squeeze(0), num_joints)
+            pred_pose, _, _ = net(motion[i:i+1, :m_length[i]])
+            
+            pred_pose_eval[i:i+1,:m_length[i],:] = pred_pose
+            
+            pred_denorm = val_loader.dataset.inv_transform(pred_pose.detach().cpu().numpy())
+                
+            pred_xyz = recover_from_local_position(pred_denorm.squeeze(0), num_joints)
+            pred_xyz = torch.from_numpy(pred_xyz).float().to(device)
+            pose_xyz = torch.from_numpy(pose_xyz).float().to(device)
+            
+            mpjpe += torch.sum(calculate_mpjpe(pose_xyz[:, :m_length[i]].squeeze(), pred_xyz[:, :m_length[i]].squeeze()))
+            num_poses += pose_xyz.shape[0]
+
+        et_pred, em_pred = textencoder(caption).loc, motionencoder(pred_pose_eval, m_length).loc
+
+        motion_pred_list.append(em_pred)
+        motion_annotation_list.append(em)
+            
+        temp_R, temp_match = calculate_R_precision(et.cpu().numpy(), em.cpu().numpy(), top_k=3, sum_all=True)
+        R_precision_real += torch.from_numpy(temp_R).to(device)
+        matching_score_real += temp_match
+        temp_R, temp_match = calculate_R_precision(et_pred.cpu().numpy(), em_pred.cpu().numpy(), top_k=3, sum_all=True)
+        R_precision += torch.from_numpy(temp_R).to(device)
+        matching_score_pred += temp_match
+
+        nb_sample += bs  
+    
+    mpjpe = mpjpe / num_poses
+    mpjpe = mpjpe * 1000
+
+    motion_annotation_np = torch.cat(motion_annotation_list, dim=0).cpu().numpy()
+    motion_pred_np = torch.cat(motion_pred_list, dim=0).cpu().numpy()
+    gt_mu, gt_cov  = calculate_activation_statistics(motion_annotation_np)
+    mu, cov= calculate_activation_statistics(motion_pred_np)
+
+    diversity_real = calculate_diversity(motion_annotation_np, 300 if nb_sample > 300 else 100)
+    diversity = calculate_diversity(motion_pred_np, 300 if nb_sample > 300 else 100)
+
+    R_precision_real = R_precision_real / nb_sample
+    R_precision = R_precision / nb_sample
+
+    matching_score_real = matching_score_real / nb_sample
+    matching_score_pred = matching_score_pred / nb_sample
+
+    fid = calculate_frechet_distance(gt_mu, gt_cov, mu, cov)
+
+    msg = f"--> \t Eva. :, FID. {fid:.4f}, Diversity Real. {diversity_real:.4f}, Diversity. {diversity:.4f}, R_precision_real. {R_precision_real}, R_precision. {R_precision}, matching_score_real. {matching_score_real}, matching_score_pred. {matching_score_pred}, mpjpe. {mpjpe:.5f} (mm)"
+    logger.info(msg)
+    
+    return fid, mpjpe, writer, logger
+
+# Multi-GPU evaluation (training time)
+@torch.no_grad()        
+def evaluation_tae_multi(out_dir, val_loader, net, logger, writer, nb_iter, best_iter, best_mpjpe, draw = True, save = True, savegif = True, device=torch.device('cuda'), accelerator=None): 
+    net.eval()
+    nb_sample = 0
+    
+    draw_org = []
+    draw_pred = []
+    draw_text = []
+
+    nb_sample = torch.tensor(0, device=device)
+    mpjpe = torch.tensor(0.0, device=device)
+    num_poses = torch.tensor(0, device=device)
+
+    for batch in val_loader:
+        caption, motion, m_length = batch
+        motion = motion.to(device)
+        bs, seq = motion.shape[0], motion.shape[1]
+        num_joints = 22
+        pred_pose_eval = torch.zeros((bs, seq, motion.shape[-1])).to(device)
+
+        for i in range(bs):
+            pose = val_loader.dataset.inv_transform(motion[i:i+1, :m_length[i], :].detach().cpu().numpy())
+            pose_xyz = recover_from_local_position(pose.squeeze(0), num_joints)
+
+            pred_pose, _, _ = net(motion[i:i+1, :m_length[i]])
+            pred_pose_eval[i:i+1,:m_length[i],:] = pred_pose
+
+            if accelerator is None or accelerator.is_main_process:
+                pred_denorm = val_loader.dataset.inv_transform(pred_pose.detach().cpu().numpy())
+                pred_xyz = recover_from_local_position(pred_denorm.squeeze(0), num_joints)
+                pred_xyz = torch.from_numpy(pred_xyz).float().to(device)
+                pose_xyz = torch.from_numpy(pose_xyz).float().to(device)
+                mpjpe += torch.sum(calculate_mpjpe(pose_xyz[:, :m_length[i]].squeeze(), pred_xyz[:, :m_length[i]].squeeze()))
+                num_poses += pose_xyz.shape[0]
+
+                if i < 4:
+                    draw_org.append(pose_xyz)
+                    draw_pred.append(pred_xyz)
+                    draw_text.append('')
+        nb_sample += bs
+
+
+    if accelerator is not None:
+        accelerator.wait_for_everyone()
+        nb_sample = accelerator.reduce(nb_sample, reduction="sum")
+        mpjpe = accelerator.reduce(mpjpe, reduction="sum")
+        
+    if accelerator is None or accelerator.is_main_process:
+        mpjpe = mpjpe / num_poses    
+        # transform mpjpe to mm
+        mpjpe = mpjpe * 1000
+        msg = f"--> \t Eva. Iter {nb_iter} :, mpjpe. {mpjpe:.3f} (mm)"
+        logger.info(msg)
+    
+    # save visualization on tensorboard
+    if draw and (accelerator is None or accelerator.is_main_process):
+        writer.add_scalar('./Test/mpjpe', mpjpe, nb_iter)
+
+        if nb_iter % 20000 == 0 : 
+            for ii in range(4):
+                draw_org[ii] = draw_org[ii].unsqueeze(0)
+                tensorborad_add_video_xyz(writer, draw_org[ii], nb_iter, tag='./Vis/org_eval'+str(ii), title_batch=[draw_text[ii]], outname=[os.path.join(out_dir, 'gt'+str(ii)+'.gif')] if savegif else None, fps=30)
+            
+        if nb_iter % 20000 == 0 : 
+            for ii in range(4):
+                draw_pred[ii] = draw_pred[ii].unsqueeze(0)
+                tensorborad_add_video_xyz(writer, draw_pred[ii], nb_iter, tag='./Vis/pred_eval'+str(ii), title_batch=[draw_text[ii]], outname=[os.path.join(out_dir, 'pred'+str(ii)+'.gif')] if savegif else None, fps=30)   
+
+    if accelerator is None or accelerator.is_main_process:
+        if mpjpe < best_mpjpe :
+            msg = f"--> --> \t mpjpe Improved from {best_mpjpe:.5f} to {mpjpe:.5f} !!!"
+            logger.info(msg)
+            best_mpjpe = mpjpe
+            if save:
+                torch.save({'net' : net.state_dict()}, os.path.join(out_dir, 'net_best_mpjpe.pth'))
+        if save:
+            torch.save({'net' : net.state_dict()}, os.path.join(out_dir, 'net_last.pth'))
+
+    net.train()
+    return best_iter, best_mpjpe, writer, logger
 
 def euclidean_distance_matrix(matrix1, matrix2):
     assert matrix1.shape[1] == matrix2.shape[1]
