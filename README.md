@@ -47,7 +47,7 @@
 - [x] Release the processing script of 272-dim motion representation.
 - [x] Release the processed 272-dim Motion Representation of [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset. Only for academic usage.
 - [x] Release the training code and checkpoint of our [TMR](https://github.com/Mathux/TMR)-based motion evaluator trained on the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset.
-- [x] Release the training and evaluation code of Causal TAE.
+- [x] Release the training and evaluation code as well as checkpoint of Causal TAE.
 - [ ] Release complete code for MotionStreamer.
 
 ## 🏃 Motion Representation
@@ -105,7 +105,7 @@ The dataset is organized as:
     >After training for 100 epochs, the checkpoint will be stored at: 
     ``Evaluator_272/experiments/temos/EXP1/checkpoints/``.
 
-    We provide the evaluator checkpoint on [Hugging Face](https://huggingface.co/lxxiao/MotionStreamer/tree/main/Evaluator_272), download it following:
+    ⬇️ We provide the evaluator checkpoint on [Hugging Face](https://huggingface.co/lxxiao/MotionStreamer/tree/main/Evaluator_272), download it following:
     ```bash
     python humanml3d_272/prepare/download_evaluator_ckpt.py
     ```
@@ -122,6 +122,10 @@ The dataset is organized as:
     > Tensorboard visualization:
     ```bash
     tensorboard --logdir='output/causal_TAE'
+    ```
+    ⬇️ We provide the Causal TAE checkpoint on [Hugging Face](https://huggingface.co/lxxiao/MotionStreamer/tree/main/Causal_TAE), download it following:
+    ```bash
+    python humanml3d_272/prepare/download_Causal_TAE_ckpt.py
     ```
 
 ## 📍 Evaluation
