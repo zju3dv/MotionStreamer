@@ -165,4 +165,4 @@ If our project is helpful for your research, please consider citing :
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=motionstreamer/motionstreamer,zju3dv/MotionStreamer&type=Date)](https://www.star-history.com/#motionstreamer/motionstreamer&zju3dv/MotionStreamer&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=zju3dv/MotionStreamer&type=Date)](https://www.star-history.com/#zju3dv/MotionStreamer&Date)
