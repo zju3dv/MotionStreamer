@@ -162,3 +162,7 @@ If our project is helpful for your research, please consider citing :
       year={2025}
     }
 ```
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=motionstreamer/motionstreamer,zju3dv/MotionStreamer&type=Date)](https://www.star-history.com/#motionstreamer/motionstreamer&zju3dv/MotionStreamer&Date)
