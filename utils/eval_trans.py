@@ -122,11 +122,6 @@ def evaluation_tae_single(out_dir, val_loader, net, logger, writer, evaluator, d
     motion_annotation_list = []
     motion_pred_list = []
 
-    R_precision_real = torch.tensor([0,0,0], device=device)
-    R_precision = torch.tensor([0,0,0], device=device)
-    matching_score_real = torch.tensor(0.0, device=device)
-    matching_score_pred = torch.tensor(0.0, device=device)
-
     nb_sample = torch.tensor(0, device=device)
     mpjpe = torch.tensor(0.0, device=device)
     num_poses = torch.tensor(0, device=device)
@@ -136,7 +131,7 @@ def evaluation_tae_single(out_dir, val_loader, net, logger, writer, evaluator, d
         motion = motion.to(device)
         motion = motion.float()
         bs, seq = motion.shape[0], motion.shape[1]
-        et, em = textencoder(caption).loc, motionencoder(motion, m_length).loc
+        em = motionencoder(motion, m_length).loc
                     
         num_joints = 22
         
@@ -158,40 +153,24 @@ def evaluation_tae_single(out_dir, val_loader, net, logger, writer, evaluator, d
             mpjpe += torch.sum(calculate_mpjpe(pose_xyz[:, :m_length[i]].squeeze(), pred_xyz[:, :m_length[i]].squeeze()))
             num_poses += pose_xyz.shape[0]
 
-        et_pred, em_pred = textencoder(caption).loc, motionencoder(pred_pose_eval, m_length).loc
+        em_pred = motionencoder(pred_pose_eval, m_length).loc
 
         motion_pred_list.append(em_pred)
         motion_annotation_list.append(em)
-            
-        temp_R, temp_match = calculate_R_precision(et.cpu().numpy(), em.cpu().numpy(), top_k=3, sum_all=True)
-        R_precision_real += torch.from_numpy(temp_R).to(device)
-        matching_score_real += temp_match
-        temp_R, temp_match = calculate_R_precision(et_pred.cpu().numpy(), em_pred.cpu().numpy(), top_k=3, sum_all=True)
-        R_precision += torch.from_numpy(temp_R).to(device)
-        matching_score_pred += temp_match
 
         nb_sample += bs  
     
     mpjpe = mpjpe / num_poses
-    mpjpe = mpjpe * 1000
+    mpjpe = mpjpe * 1000   # mm
 
     motion_annotation_np = torch.cat(motion_annotation_list, dim=0).cpu().numpy()
     motion_pred_np = torch.cat(motion_pred_list, dim=0).cpu().numpy()
     gt_mu, gt_cov  = calculate_activation_statistics(motion_annotation_np)
     mu, cov= calculate_activation_statistics(motion_pred_np)
 
-    diversity_real = calculate_diversity(motion_annotation_np, 300 if nb_sample > 300 else 100)
-    diversity = calculate_diversity(motion_pred_np, 300 if nb_sample > 300 else 100)
-
-    R_precision_real = R_precision_real / nb_sample
-    R_precision = R_precision / nb_sample
-
-    matching_score_real = matching_score_real / nb_sample
-    matching_score_pred = matching_score_pred / nb_sample
-
     fid = calculate_frechet_distance(gt_mu, gt_cov, mu, cov)
 
-    msg = f"--> \t Eva. :, FID. {fid:.4f}, Diversity Real. {diversity_real:.4f}, Diversity. {diversity:.4f}, R_precision_real. {R_precision_real}, R_precision. {R_precision}, matching_score_real. {matching_score_real}, matching_score_pred. {matching_score_pred}, mpjpe. {mpjpe:.5f} (mm)"
+    msg = f"--> \t Eva. :, FID. {fid:.4f}, mpjpe. {mpjpe:.5f} (mm)"
     logger.info(msg)
     
     return fid, mpjpe, writer, logger
