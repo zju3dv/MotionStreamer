@@ -25,7 +25,7 @@
     <br>
     <sup>1</sup>Zhejiang University  <sup>2</sup>The Chinese University of Hong Kong, Shenzhen  <sup>3</sup>The University of Hong Kong  <br><sup>4</sup>Shanghai Jiao Tong University  <sup>5</sup>DeepGlint  <sup>6</sup>Shanghai AI Lab
     <br>
-    <strong>Arxiv 2025</strong>
+    <strong>ICCV 2025</strong>
     
   </p>
 </p>
@@ -42,6 +42,10 @@
 
 <img width="1385" alt="image" src="assets/teaser.jpg"/>
 
+## 🔥 News
+
+- **[2025-06]** MotionStreamer has been accepted to ICCV 2025! 🎉
+  
 ## TODO List
 
 - [x] Release the processing script of 272-dim motion representation.
