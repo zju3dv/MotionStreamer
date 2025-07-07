@@ -131,6 +131,7 @@ The dataset is organized as:
     ```bash
     python humanml3d_272/prepare/download_Causal_TAE_ckpt.py
     ```
+     >The downloaded checkpoint will be stored in a new folder named Causal_TAE/.
 
 ## 📍 Evaluation
 
