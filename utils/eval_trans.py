@@ -327,7 +327,7 @@ def evaluation_transformer_272_single(val_loader, net, trans, tokenize_model, lo
     msg = f"--> \t Eval. :, FID. {fid:.4f}, Diversity Real. {diversity_real:.4f}, Diversity Pred. {diversity:.4f}, R_precision Real. {R_precision_real}, R_precision Pred. {R_precision}, MM-dist (matching_score) Real. {matching_score_real}, MM-dist (matching_score) Pred. {matching_score_pred}"
     logger.info(msg)
 
-    return fid, diversity, R_precision[0], R_precision[1], R_precision[2], matching_score_pred, writer, logger
+    return fid, diversity, R_precision[0], R_precision[1], R_precision[2], matching_score_pred, logger
 
 def euclidean_distance_matrix(matrix1, matrix2):
     assert matrix1.shape[1] == matrix2.shape[1]
