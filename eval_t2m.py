@@ -126,7 +126,7 @@ top3 = []
 matching = []
 mpjpe = []
 
-best_fid, best_div, best_top1, best_top2, best_top3, best_matching, writer, logger = eval_trans.evaluation_transformer_272_single(val_loader, net, trans_encoder, tokenize_model, logger, evaluator, 4.0)
+best_fid, best_div, best_top1, best_top2, best_top3, best_matching, logger = eval_trans.evaluation_transformer_272_single(val_loader, net, trans_encoder, tokenize_model, logger, evaluator, 4.0)
 fid.append(best_fid)
 div.append(best_div)
 top1.append(best_top1)
