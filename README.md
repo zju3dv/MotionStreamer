@@ -11,7 +11,7 @@
     ·
     <a href='https://liangpan99.github.io/' target='_blank'>Liang Pan</a><sup>3</sup>
     ·
-    <a href='yueezhou7@gmail.com' target='_blank'>Yueer Zhou</a><sup>1</sup>
+    <a href='https://yueezhou7@gmail.com' target='_blank'>Yueer Zhou</a><sup>1</sup>
     ·
     <a href='https://dblp.org/pid/120/4362.html/' target='_blank'>Ziyong Feng</a><sup>5</sup>
     ·
