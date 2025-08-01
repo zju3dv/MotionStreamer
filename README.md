@@ -267,19 +267,13 @@ The dataset is organized as:
 
 ## 📍 Evaluation
 
-1. Evaluate the metrics of the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset:
-    ```bash
-    bash EVAL_GT.sh
-    ```
-    ( FID, R@1, R@2, R@3, Diversity and MM-Dist (Matching Score) are reported. )
-
-2. Evaluate the metrics of Causal TAE:
+1. Evaluate the metrics of Causal TAE:
     ```bash
     bash EVAL_causal_TAE.sh
     ```
     ( FID and MPJPE (mm) are reported. )
 
-3. Evaluate the metrics of text to motion model:
+2. Evaluate the metrics of text to motion model:
     ```bash
     bash EVAL_t2m.sh
     ```
