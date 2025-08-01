@@ -8,7 +8,7 @@ from models.llama_model import LLaMAHF, LLaMAHFConfig
 import options.option_transformer as option_trans
 import utils.utils_model as utils_model
 import utils.eval_trans as eval_trans
-from humanml3d_272 import dataset_eval_tae
+from humanml3d_272 import dataset_eval_t2m
 import models.tae as tae
 import warnings
 warnings.filterwarnings('ignore')
@@ -30,7 +30,7 @@ os.makedirs(args.out_dir, exist_ok = True)
 logger = utils_model.get_logger(args.out_dir)
 writer = SummaryWriter(args.out_dir)
 logger.info(json.dumps(vars(args), indent=4, sort_keys=True))
-val_loader = dataset_eval_tae.DATALoader(args.dataname, True, 32)
+val_loader = dataset_eval_t2m.DATALoader(args.dataname, True, 32)
 
 ##### ---- Network ---- #####
 from sentence_transformers import SentenceTransformer
