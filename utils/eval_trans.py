@@ -81,35 +81,7 @@ def recover_from_local_position(final_x, njoint):
 
     return positions_with_heading
 
-@torch.no_grad()                
-def evaluation_gt(val_loader, evaluator, device=torch.device('cuda')):  
-    textencoder, motionencoder = evaluator
-    motion_annotation_list = []
-    R_precision_real = torch.tensor([0,0,0], device=device)
-    matching_score_real = torch.tensor(0.0, device=device)
-    nb_sample = torch.tensor(0, device=device)
-    
-    for batch in val_loader:
-        text, pose, m_length = batch
-        pose = pose.to(device).float()
-        et, em = textencoder(text).loc, motionencoder(pose, m_length).loc
-        motion_annotation_list.append(em)
-        temp_R, temp_match = calculate_R_precision(et.cpu().numpy(), em.cpu().numpy(), top_k=3, sum_all=True)
-        R_precision_real += torch.tensor(temp_R, device=device)
-        matching_score_real += torch.tensor(temp_match, device=device)
-        nb_sample += et.shape[0]
 
-    motion_annotation_np = torch.cat(motion_annotation_list, dim=0).cpu().numpy()
-    
-    diversity_real = calculate_diversity(motion_annotation_np, 300 if nb_sample > 300 else 100)
-
-    R_precision_real = R_precision_real / nb_sample
-    matching_score_real = matching_score_real / nb_sample
-    
-    # for GT data, no need to calculate fid
-    fid = 0.0
-    
-    return fid, diversity_real, R_precision_real[0], R_precision_real[1], R_precision_real[2], matching_score_real
 
 # Single-GPU evaluation of Causal TAE (test time)
 @torch.no_grad()
