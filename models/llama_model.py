@@ -10,7 +10,7 @@ from typing import Optional
 from transformers.modeling_utils import PreTrainedModel
 from torch.distributions import Categorical
 import torch.nn.functional as F
-from timm.layers.mlp import SwiGLU, Mlp 
+
 
 @dataclass
 class LLaMAHFConfig:
@@ -160,46 +160,28 @@ class LLaMAHF(nn.Module):
     
     
     
-    # 推理时调用，可以停止
-    def sample_for_eval_CFG_inference(self, clip_text, if_categorial=False, length=312, clip_model=None, device=torch.device('cuda'), tokenizer='clip', unit_length=4, reference_end_token=None, threshold=3, cfg=4.5, temperature=1.0):
-
-        import clip
+    # For inference, can stop sampling when the distance between the current token and the reference end token is less than the threshold.
+    def sample_for_eval_CFG_inference(self, text, length=312, tokenizer=None, device=torch.device('cuda'), unit_length=4, reference_end_latent=None, threshold=0.1, cfg=4.0, temperature=1.0):
         max_token_len = length // unit_length
-        #print(f'Max_token_len: {max_token_len}')
+        feat_text = torch.from_numpy(tokenizer.encode(text)).float()
+        feat_text = feat_text.to(device)
 
-        if tokenizer == 'clip':
-            text = clip.tokenize(clip_text, truncate=True).to(device)  # len(cliptext)=32, text.shape=torch.Size([32, 77])
-
-            feat_clip_text = clip_model.encode_text(text).float()  # feat_clip_text.shape=torch.Size([32, 512])
-        elif tokenizer == 't5-xxl':
-            feat_clip_text = torch.from_numpy(clip_model.encode(clip_text)).float()   # torch.Size([32, 768])
-            #feat_clip_text = feat_clip_text.unsqueeze(0)
-            feat_clip_text = feat_clip_text.to(device)
-
-        empty_clip_text = ''
-        if tokenizer == 'clip':
-            empty_text = clip.tokenize(empty_clip_text, truncate=True).to(device)
-            empty_feat_clip_text = clip_model.encode_text(empty_text).float()
-        elif tokenizer == 't5-xxl':
-            empty_feat_clip_text = torch.from_numpy(clip_model.encode(empty_clip_text)).float()   # torch.Size([32, 768])
-            empty_feat_clip_text = empty_feat_clip_text.unsqueeze(0)
-            empty_feat_clip_text = empty_feat_clip_text.to(device)
+        # CFG inference
+        empty_text = ''
+        empty_feat_text = torch.from_numpy(tokenizer.encode(empty_text)).float()   # torch.Size([32, 768])
+        empty_feat_text = empty_feat_text.unsqueeze(0)
+        empty_feat_text = empty_feat_text.to(device)
         
         for k in range(max_token_len): 
             if k == 0:
                 x = []
             else:
                 x = xs
-            
-            try:
-                conditions = self.forward(x, feat_clip_text)
-            except:
-                conditions = self.forward(x, feat_clip_text.unsqueeze(0))
-
-            
+                
+            conditions = self.forward_inference(x, feat_text)
             conditions = conditions[:, -1, :]                            
 
-            empty_conditions = self.forward(x, empty_feat_clip_text)       
+            empty_conditions = self.forward(x, empty_feat_text)       
             empty_conditions = empty_conditions[:, -1, :]                             
             
             mix_conditions = torch.cat([conditions, empty_conditions], dim=0)     
@@ -213,8 +195,8 @@ class LLaMAHF(nn.Module):
 
             scaled_logits = scaled_logits.unsqueeze(0)      
             
-            if reference_end_token is not None:
-                distance_l2 = torch.sqrt(torch.sum((scaled_logits - reference_end_token)**2))
+            if reference_end_latent is not None:
+                distance_l2 = torch.sqrt(torch.sum((scaled_logits - reference_end_latent)**2))
                 print(distance_l2)
                 if distance_l2 < threshold:
                     break
@@ -225,6 +207,8 @@ class LLaMAHF(nn.Module):
                 xs = torch.cat((xs, scaled_logits), dim=1)
 
         return xs
+
+        
     def sample_for_eval_CFG_inference2(self, feat_clip_text, empty_feat_clip_text, if_categorial=False, length=312, clip_model=None, device=torch.device('cuda'), tokenizer='clip', unit_length=4, reference_end_token=None, threshold=3, cfg=4.5, temperature=1.0):
        
         import clip
@@ -845,6 +829,34 @@ class LLaMAHF(nn.Module):
             token_embeddings = torch.cat([text_embeddings, token_embeddings], dim=1) 
         
         x = token_embeddings  
+
+        for i,block in enumerate(self.transformer.h):
+            x = block(x)
+        x = self.transformer.ln_f(x)    
+        logits = self.out_proj(x)
+        return logits
+
+
+    def forward_inference(self, idx: torch.Tensor, feature: torch.Tensor) -> torch.Tensor:
+        if len(idx) == 0:
+            token_embeddings = self.transformer.cond_embed(feature).unsqueeze(0)
+
+        else:
+            b, t, c = idx.size()
+            idx = idx.float()
+            assert (
+                t <= self.config.block_size
+            ), f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
+
+            # forward the LLaMA model itself
+            token_embeddings = self.transformer.wte(idx)  
+            text_embeddings = self.transformer.cond_embed(feature).unsqueeze(0)    
+            token_embeddings = torch.cat([text_embeddings.unsqueeze(0), token_embeddings], dim=1) 
+        
+        x = token_embeddings  
+
+        if len(x.shape) == 2:
+            x = x.unsqueeze(0)
 
         for i,block in enumerate(self.transformer.h):
             x = block(x)
@@ -1517,7 +1529,7 @@ class MLP(nn.Module):
         self.c_proj = nn.Linear(n_hidden, config.n_embd, bias=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """用了SwiGLU"""
+       
         x = F.silu(self.c_fc1(x)) * self.c_fc2(x)
         x = self.c_proj(x)
         return x
