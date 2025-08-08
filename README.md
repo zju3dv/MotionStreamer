@@ -53,6 +53,7 @@
 - [x] Release the training code and checkpoint of our [TMR](https://github.com/Mathux/TMR)-based motion evaluator trained on the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset.
 - [x] Release the training and evaluation code as well as checkpoint of Causal TAE.
 - [x] Release the training code of original motion generation model and streaming generation model (MotionStreamer).
+- [x] Release the checkpoint and demo inference code of original motion generation model.
 - [ ] Release complete code for MotionStreamer.
 
 ## 🏃 Motion Representation
@@ -267,21 +268,45 @@ The dataset is organized as:
 
 ## 📍 Evaluation
 
-1. Evaluate the metrics of Causal TAE:
+1. Evaluate the metrics of the processed 272-dim [HumanML3D](https://github.com/EricGuo5513/HumanML3D) dataset:
+    ```bash
+    bash EVAL_GT.sh
+    ```
+    ( FID, R@1, R@2, R@3, Diversity and MM-Dist (Matching Score) are reported. )
+
+2. Evaluate the metrics of Causal TAE:
     ```bash
     bash EVAL_causal_TAE.sh
     ```
     ( FID and MPJPE (mm) are reported. )
 
-2. Evaluate the metrics of text to motion model:
+3. Evaluate the metrics of text to motion model:
     ```bash
     bash EVAL_t2m.sh
     ```
     ( FID, R@1, R@2, R@3, Diversity and MM-Dist (Matching Score) are reported. )
 
 
+## 🎬 Demo Inference
+
+1. Inference of text to motion model:
+    > [Option1] Recover from joint position 
+    ```bash
+    python demo_t2m.py --text 'a person is walking like a mummy.' --mode pos --resume-pth Causal_TAE/net_last.pth --resume-trans Experiments/t2m_model/latest.pth
+    ```
+    > [Option2] Recover from joint rotation 
+    ```bash
+    python demo_t2m.py --text 'a person is walking like a mummy.' --mode rot --resume-pth Causal_TAE/net_last.pth --resume-trans Experiments/t2m_model/latest.pth
+    ```
+    > In our 272-dim representation, Inverse Kinematics (IK) is not needed.
+    > For further conversion to BVH format, please refer to [this repo](https://github.com/Li-xingXiao/272-dim-Motion-Representation?tab=readme-ov-file#6-representation_272-to-bvh-conversion-optional) (Step 6: Representation_272 to BVH conversion). The BVH format of motion animation can be visualizd and edited in [Blender](https://www.blender.org/features/animation/).
+
+
+
+
 ## 🌹 Acknowledgement
 This repository builds upon the following awesome datasets and projects:
+- [272-dim-Motion-Representation](https://github.com/Li-xingXiao/272-dim-Motion-Representation)
 - [AMASS](https://amass.is.tue.mpg.de/index.html)
 - [HumanML3D](https://github.com/EricGuo5513/HumanML3D)
 - [T2M-GPT](https://github.com/Mael-zys/T2M-GPT)
