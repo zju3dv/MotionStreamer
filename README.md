@@ -225,6 +225,11 @@ The dataset is organized as:
     tensorboard --logdir='Experiments/t2m_model'
     ```
 
+    ⬇️ We provide the text to motion model checkpoint on [Hugging Face](https://huggingface.co/lxxiao/MotionStreamer/tree/main/Experiments/t2m_model), download it following:
+    ```bash
+    python humanml3d_272/prepare/download_t2m_model_ckpt.py
+    ```
+
 4. Train streaming motion generation model (MotionStreamer):
     > We provide scripts to train the streaming motion generation model (MotionStreamer) with llama blocks, Two-Forward strategy and QK-Norm, using the motion latents encoded by the Causal TAE (need to train a new Causal TAE using both HumanML3D-272 and BABEL-272 data).
     
