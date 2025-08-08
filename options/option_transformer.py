@@ -33,6 +33,8 @@ def get_args_parser():
     parser.add_argument('--total-iter', default=2000000, type=int, help='number of total iterations to run')
     parser.add_argument('--batch-size', default=256, type=int, help='batch size')
 
+    parser.add_argument('--text', type=str, default='A man is jogging around.')
+    parser.add_argument('--mode', type=str, default='pos', choices=['pos', 'rot'], help='recover mode, pos: position, rot: rotation')
 
 
 
