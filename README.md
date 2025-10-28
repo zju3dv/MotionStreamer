@@ -32,7 +32,7 @@
 <p align="center">
   <a href='https://arxiv.org/abs/2503.15451'>
     <img src='https://img.shields.io/badge/Arxiv-2503.15451-A42C25?style=flat&logo=arXiv&logoColor=A42C25'></a>
-  <a href='https://arxiv.org/pdf/2503.15451'>
+  <a href='https://openaccess.thecvf.com/content/ICCV2025/papers/Xiao_MotionStreamer_Streaming_Motion_Generation_via_Diffusion-based_Autoregressive_Model_in_Causal_ICCV_2025_paper.pdf'>
     <img src='https://img.shields.io/badge/Paper-PDF-blue?style=flat&logo=arXiv&logoColor=blue'></a>
   <a href='https://zju3dv.github.io/MotionStreamer/'>
     <img src='https://img.shields.io/badge/Project-Page-green?style=flat&logo=Google%20chrome&logoColor=green'></a>
