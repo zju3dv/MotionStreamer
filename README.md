@@ -200,29 +200,55 @@ The dataset is organized as:
     python humanml3d_272/prepare/download_Causal_TAE_t2m_272_ckpt.py
     ```
 
+
 3. Train text to motion model:
+
     > We provide scripts to train the original text to motion generation model with llama blocks, Two-Forward strategy and QK-Norm, using the motion latents encoded by the Causal TAE (trained in the first stage).
+
     
+
     3.1 Get motion latents:
+
+    > This step uses the pre-trained Causal TAE model to encode raw HumanML3D motion data into latent representations, saving them to humanml3d_272/t2m_latents for text-to-motion model training.
+
    ```bash
+
    python get_latent.py --resume-pth Causal_TAE/net_last.pth --latent_dir humanml3d_272/t2m_latents
+
    ```
+
     3.2 Download [sentence-T5-XXL model](https://huggingface.co/sentence-transformers/sentence-t5-xxl/tree/main) on Hugging Face:
+
    ```bash
+
    huggingface-cli download --resume-download sentence-transformers/sentence-t5-xxl --local-dir sentencet5-xxl/
+
    ```
+
     3.3 Train text to motion generation model:
+
    ```bash
+
    bash TRAIN_t2m.sh ${NUM_GPUS}
+
    ```
+
     > e.g., if you have 8 GPUs, run: bash TRAIN_t2m.sh 8
 
+
+
     > The checkpoint will be stored at:
+
     ``Experiments/t2m_model/``
 
+
+
     > Tensorboard visualization:
+
     ```bash
+
     tensorboard --logdir='Experiments/t2m_model'
+
     ```
 
     ⬇️ We provide the text to motion model checkpoint on [Hugging Face](https://huggingface.co/lxxiao/MotionStreamer/tree/main/Experiments/t2m_model), download it following:
