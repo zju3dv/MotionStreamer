@@ -54,7 +54,7 @@
 - [x] Release the training and evaluation code as well as checkpoint of Causal TAE.
 - [x] Release the training code of original motion generation model and streaming generation model (MotionStreamer).
 - [x] Release the checkpoint and demo inference code of original motion generation model.
-- [ ] Release complete code for MotionStreamer.
+- [x] Release complete code for MotionStreamer.
 
 ## 🏃 Motion Representation
 For more details of how to obtain the 272-dim motion representation, as well as other useful tools (e.g., Visualization and Conversion to BVH format), please refer to our [GitHub repo](https://github.com/Li-xingXiao/272-dim-Motion-Representation).
