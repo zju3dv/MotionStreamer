@@ -37,11 +37,17 @@ def initial_optim(decay_option, lr, weight_decay, net, optimizer) :
     elif optimizer == 'adam' : 
         optimizer_adam_family = optim.Adam
     if decay_option == 'all':
+        
         optimizer = optimizer_adam_family(net.parameters(), lr=lr, betas=(0.9, 0.99), weight_decay=weight_decay)
         
-    else:
-        raise NotImplementedError
+    elif decay_option == 'noVQ':
+        all_params = set(net.parameters())
+        no_decay = set([net.vq_layer])
         
+        decay = all_params - no_decay
+        optimizer = optimizer_adam_family([
+                    {'params': list(no_decay), 'weight_decay': 0}, 
+                    {'params': list(decay), 'weight_decay' : weight_decay}], lr=lr)
         
     return optimizer
 
